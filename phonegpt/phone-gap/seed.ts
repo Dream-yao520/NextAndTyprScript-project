@@ -64,7 +64,7 @@ const loadData = async (webpages: string[]) => {
             })
             console.log(embedding)
             const { error } = await supabase.from("chunks").insert({
-                content: chunks[0],
+                content: chunk,
                 vector: embedding,
                 url,
             })
