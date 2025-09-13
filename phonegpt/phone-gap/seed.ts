@@ -26,7 +26,7 @@ const openai = createOpenAI({
 })
 
 
-console.log('开始向量化知识库数据');
+console.log('开始向量化蝴蝶知识库数据');
 const splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 512, // 切割的长度 包含一个比较独立的语义
     chunkOverlap: 100, // 切割的重叠长度 为了避免切割的句子中间被截断 100字符
@@ -52,33 +52,57 @@ const scrapePage = async (url: string): Promise<string> => {
     return (await loader.scrape()).replace(/<[^>]*>?/gm, "");
 }
 const loadData = async (webpages: string[]) => {
+    let totalChunks = 0;
+    const maxChunks = 150; // 限制最多处理150条信息
+
     for (const url of webpages) {
+        if (totalChunks >= maxChunks) {
+            console.log(`已达到最大处理数量 ${maxChunks} 条，停止处理`);
+            break;
+        }
+
+        console.log(`正在处理网页: ${url}`);
         const content = await scrapePage(url);
-        // console.log(content);
-        const chunks = await splitter.splitText(content)
-        // console.log(chunks, '...')
+        const chunks = await splitter.splitText(content);
+        console.log(`从 ${url} 获取到 ${chunks.length} 个文本块`);
+
         for (let chunk of chunks) {
+            if (totalChunks >= maxChunks) {
+                console.log(`已达到最大处理数量 ${maxChunks} 条，停止处理当前页面`);
+                break;
+            }
+
             const { embedding } = await embed({
                 model: openai.embedding('text-embedding-3-small'),
                 value: chunk,
             })
-            console.log(embedding)
+
             const { error } = await supabase.from("chunks").insert({
                 content: chunk,
                 vector: embedding,
                 url,
             })
-        }
 
+            if (error) {
+                console.error('插入数据时出错:', error);
+            } else {
+                totalChunks++;
+                console.log(`已处理 ${totalChunks}/${maxChunks} 条蝴蝶信息`);
+            }
+        }
     }
+
+    console.log(`蝴蝶知识库构建完成，总共处理了 ${totalChunks} 条信息`);
 }
 
-// 维护一个知识库，知识库的来源可配置
+// 维护一个蝴蝶知识库，知识库的来源可配置
 loadData([
-    "https://en.wikipedia.org/wiki/Samsung_Galaxy_S25",
-    // "https://en.wikipedia.org/wiki/Samsung_Galaxy_S24",
-    // "https://en.wikipedia.org/wiki/IPhone_16",
-    // "https://en.wikipedia.org/wiki/IPhone_16_Pro",
-    // "https://en.wikipedia.org/wiki/IPhone_15",
-    // "https://en.wikipedia.org/wiki/IPhone_15_Pro",
+    "https://en.wikipedia.org/wiki/Butterfly",
+    "https://en.wikipedia.org/wiki/Lepidoptera",
+    "https://en.wikipedia.org/wiki/Monarch_butterfly",
+    "https://en.wikipedia.org/wiki/Swallowtail_butterfly",
+    "https://en.wikipedia.org/wiki/Butterfly_life_cycle",
+    "https://en.wikipedia.org/wiki/Butterfly_migration",
+    "https://en.wikipedia.org/wiki/List_of_butterflies_of_North_America",
+    "https://en.wikipedia.org/wiki/Butterfly_conservation",
 ]);
