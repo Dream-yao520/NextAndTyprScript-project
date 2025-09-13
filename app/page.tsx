@@ -17,7 +17,7 @@ export default function Home() {
   } = useChat();
   return (
     <main className="max-w-3xl mx-auto p-4">
-      <h1 className="text-xl font-semibold mb-4">phoneGPT</h1>
+      <h1 className="text-xl font-semibold mb-4">BufferflyGPT</h1>
       <div className="space-y-4 mb-4 max-h-[80vh] overflow-y-auto">
         <ChatOutput messages={messages} status={status} />
       </div>
