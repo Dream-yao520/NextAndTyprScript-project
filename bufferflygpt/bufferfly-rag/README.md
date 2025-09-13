@@ -1,11 +1,11 @@
-# phoneGPT
+# BufferflyGPT
 
 - chatbot
     组件、tailwindcss messages
     ai streaming 复杂 封装？
     大模型
 - 专业领域的chatbot
-    RAG 手机知识库 检索增强
+    RAG 蝴蝶知识库 检索增强
     - 知识库（爬虫）
     - 向量数据库（supabase）
 
